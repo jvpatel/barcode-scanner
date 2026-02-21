@@ -16,18 +16,38 @@
     <script>
         const html5QrCode = new Html5Qrcode("reader");
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxhtkHEAEzRdIXmj-AHQ0Ky3ICDySSPGCPC7Ch9w4taKSUJrSbgJCEIsf2P4jvGAk1U/exec';
+        const formatsToSupport = [
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.CODE_39
+            ];
+            
+            const config = { 
+                fps: 30, // Maximum frame rate for iPhone
+                // This creates a wide, thin scanning area (Letterbox)
+                qrbox: { width: 350, height: 100 }, 
+                aspectRatio: 1.0, 
+                showTorchButtonIfSupported: true,
+                experimentalFeatures: {
+                    useBarCodeDetectorIfSupported: true // Crucial: Uses iOS native hardware decoding
+                }
+            };
 
         function startScanning() {
             html5QrCode.start(
-                { facingMode: "environment" }, // Use back camera
-                { fps: 10, qrbox: { width: 250, height: 150 } },
+                { facingMode: "environment" }, 
+                config,
                 (decodedText) => {
-                    // On successful scan
+                    // SUCCESS LOGIC HERE
                     html5QrCode.stop(); 
                     document.getElementById('reader').style.display = 'none';
                     document.getElementById('form-container').style.display = 'block';
                     document.getElementById('scanned-result').innerText = decodedText;
-                }
+                },
+                undefined, // Ignore errors for speed
+                formatsToSupport // Explicitly limit to these formats
             );
         }
 
@@ -51,4 +71,5 @@
         startScanning(); // Initial start
     </script>
 </body>
+
 </html>
