@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div id="reader" style="width: 100%;"></div>
+    <div id="form-container" style="display:none; padding: 20px;">
+        <p>Scanned Barcode: <span id="scanned-result"></span></p>
+        <input type="number" id="quantity" placeholder="Enter Quantity" inputmode="numeric">
+        <button onclick="submitData()">Submit & Scan Next</button>
+    </div>
+
+    <script>
+        const html5QrCode = new Html5Qrcode("reader");
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxhtkHEAEzRdIXmj-AHQ0Ky3ICDySSPGCPC7Ch9w4taKSUJrSbgJCEIsf2P4jvGAk1U/exec';
+
+        function startScanning() {
+            html5QrCode.start(
+                { facingMode: "environment" }, // Use back camera
+                { fps: 10, qrbox: { width: 250, height: 150 } },
+                (decodedText) => {
+                    // On successful scan
+                    html5QrCode.stop(); 
+                    document.getElementById('reader').style.display = 'none';
+                    document.getElementById('form-container').style.display = 'block';
+                    document.getElementById('scanned-result').innerText = decodedText;
+                }
+            );
+        }
+
+        async function submitData() {
+            const barcode = document.getElementById('scanned-result').innerText;
+            const quantity = document.getElementById('quantity').value;
+
+            // Send data to Google Sheets
+            await fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify({ barcode, quantity })
+            });
+
+            // Reset UI for next scan
+            document.getElementById('quantity').value = '';
+            document.getElementById('form-container').style.display = 'none';
+            document.getElementById('reader').style.display = 'block';
+            startScanning();
+        }
+
+        startScanning(); // Initial start
+    </script>
+</body>
+</html>
